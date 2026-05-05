@@ -1,0 +1,20 @@
+{
+  "name": "WumbleJumble",
+  "short_name": "WumbleJumble",
+  "description": "A fast-paced esports word puzzle game. Reconstruct jumbled sentences before time runs out!",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0E1A",
+  "theme_color": "#00F0FF",
+  "icons": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "puzzle"],
+  "lang": "en"
+}

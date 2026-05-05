@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="WumbleJumble - A fast-paced esports word puzzle game. Reconstruct jumbled sentences before time runs out!">
+  <meta name="theme-color" content="#00F0FF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>WumbleJumble</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-512.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow cyan"></div>
+  <div class="bg-glow magenta"></div>
+
+  <div id="app">
+    <!-- Splash Screen -->
+    <section id="splash-screen" class="screen active">
+      <div class="splash-logo">
+        <h1>WUMBLE<br>JUMBLE</h1>
+        <p class="splash-tagline">Unscramble • Conquer • Dominate</p>
+        <div class="splash-spinner"></div>
+      </div>
+    </section>
+
+    <!-- Main Menu -->
+    <section id="menu-screen" class="screen">
+      <div class="menu-logo">
+        <img src="icons/icon-512.png" alt="WumbleJumble" id="menu-icon">
+        <h1>WUMBLE<br>JUMBLE</h1>
+      </div>
+      <p class="menu-username">Playing as <span id="username-display"></span></p>
+      <button class="neon-btn primary" id="btn-play">▶ PLAY</button>
+      <button class="neon-btn" id="btn-highscore">🏆 HIGH SCORES</button>
+      <button class="neon-btn magenta" id="btn-howtoplay">📖 HOW TO PLAY</button>
+      <button class="neon-btn amber" id="btn-leaderboard">🌐 LEADERBOARD</button>
+      <button class="mute-btn" id="btn-mute" title="Toggle Sound">🔊</button>
+    </section>
+
+    <!-- Game Screen -->
+    <section id="game-screen" class="screen">
+      <div class="flash-overlay correct" id="flash-correct"></div>
+      <div class="flash-overlay wrong" id="flash-wrong"></div>
+
+      <div class="game-top-bar">
+        <div class="game-score">
+          <div class="game-score-label">Score</div>
+          <div class="game-score-value" id="game-score">0</div>
+        </div>
+        <div class="game-timer">
+          <div class="game-timer-value" id="game-timer">60</div>
+          <div class="game-timer-label">Time</div>
+          <div class="game-timer-bar">
+            <div class="game-timer-bar-fill" id="timer-bar-fill"></div>
+          </div>
+        </div>
+        <div class="game-lives">
+          <div class="game-lives-label">Lives</div>
+          <div class="game-lives-hearts" id="game-lives">
+            <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-word-count">
+        <span id="word-count-display">3</span> WORD SENTENCE
+      </div>
+
+      <div class="game-words-area">
+        <div class="jumbled-section">
+          <div class="section-label">Tap words in order</div>
+          <div class="word-tiles jumbled-tiles" id="jumbled-tiles"></div>
+        </div>
+        <div class="staged-section">
+          <div class="section-label">Your answer</div>
+          <div class="word-tiles staged-tiles" id="staged-tiles">
+            <span class="staged-placeholder">Tap words above to build your sentence</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-submit-area">
+        <button class="neon-btn small" id="btn-skip" title="Skip">⏭ SKIP</button>
+        <button class="neon-btn primary" id="btn-submit" disabled>✓ SUBMIT</button>
+      </div>
+      <button class="mute-btn" id="btn-mute-game" title="Toggle Sound">🔊</button>
+    </section>
+
+    <!-- Game Over Screen -->
+    <section id="gameover-screen" class="screen">
+      <div class="gameover-title" id="gameover-title">TIME'S UP!</div>
+      <div id="new-highscore-badge" class="new-highscore" style="display:none">⚡ NEW HIGH SCORE! ⚡</div>
+      <div class="gameover-score-box">
+        <div class="gameover-score-label">Final Score</div>
+        <div class="gameover-score-value" id="gameover-score">0</div>
+      </div>
+      <div class="gameover-best">Best: <span id="gameover-best">0</span></div>
+      <div class="gameover-buttons">
+        <button class="neon-btn primary" id="btn-retry">🔄 PLAY AGAIN</button>
+        <button class="neon-btn" id="btn-menu">🏠 MAIN MENU</button>
+      </div>
+    </section>
+
+    <!-- High Scores Screen -->
+    <section id="highscore-screen" class="screen">
+      <h2 class="screen-title">🏆 High Scores</h2>
+      <div class="score-list" id="score-list"></div>
+      <button class="neon-btn small" id="btn-hs-back">← BACK</button>
+    </section>
+
+    <!-- How to Play Screen -->
+    <section id="howtoplay-screen" class="screen">
+      <h2 class="screen-title">📖 How to Play</h2>
+      <div class="htp-cards">
+        <div class="htp-card">
+          <div class="htp-card-icon">🧩</div>
+          <h3>Unscramble the Sentence</h3>
+          <p>You'll see a jumbled sentence. Tap the words in the correct order to reconstruct the original sentence.</p>
+        </div>
+        <div class="htp-card">
+          <div class="htp-card-icon">👆</div>
+          <h3>Tap to Build</h3>
+          <p>Tap a word to add it to your answer. Tap a placed word to remove it. Arrange all words correctly, then hit Submit.</p>
+        </div>
+        <div class="htp-card">
+          <div class="htp-card-icon">⏱️</div>
+          <h3>Beat the Clock</h3>
+          <p>You have 60 seconds per game. Sentences get longer as you score more. Speed is key!</p>
+        </div>
+        <div class="htp-card">
+          <div class="htp-card-icon">❤️</div>
+          <h3>Lives System</h3>
+          <p>You start with 3 lives. Each wrong submission costs 1 life. Game ends at 0 lives or when time runs out.</p>
+        </div>
+        <div class="htp-card">
+          <div class="htp-card-icon">⭐</div>
+          <h3>Scoring</h3>
+          <p>+1 point for each correct sentence. Try to beat your high score! Difficulty increases with each correct answer.</p>
+        </div>
+      </div>
+      <button class="neon-btn small" id="btn-htp-back" style="margin-top:16px">← BACK</button>
+    </section>
+
+    <!-- Leaderboard Placeholder -->
+    <section id="leaderboard-screen" class="screen">
+      <h2 class="screen-title">🌐 Leaderboard</h2>
+      <div style="text-align:center;padding:40px 20px;">
+        <div class="coming-soon">UNDER DEVELOPMENT</div>
+        <p class="coming-soon-sub" style="margin-top:12px;">Multiplayer leaderboards coming soon.<br>Stay tuned for global rankings!</p>
+      </div>
+      <button class="neon-btn small" id="btn-lb-back">← BACK</button>
+    </section>
+  </div>
+
+  <script src="js/sentences.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
