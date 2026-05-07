@@ -20,7 +20,8 @@ class App {
     setTimeout(() => this.showScreen('menu-screen'), 2800);
 
     // Bind menu buttons
-    document.getElementById('btn-play').addEventListener('click', () => this.startGame());
+    document.getElementById('btn-play').addEventListener('click', () => this.showModal('modal-difficulty'));
+    document.getElementById('btn-marathon').addEventListener('click', () => this.startGame('marathon'));
     document.getElementById('btn-highscore').addEventListener('click', () => this.showHighScores());
     document.getElementById('btn-howtoplay').addEventListener('click', () => this.showScreen('howtoplay-screen'));
     document.getElementById('btn-leaderboard').addEventListener('click', () => this.showScreen('leaderboard-screen'));
@@ -31,7 +32,7 @@ class App {
     document.getElementById('btn-lb-back').addEventListener('click', () => this.showScreen('menu-screen'));
 
     // Bind game over buttons
-    document.getElementById('btn-retry').addEventListener('click', () => this.startGame());
+    document.getElementById('btn-retry').addEventListener('click', () => this.startGame(this.game.mode));
     document.getElementById('btn-menu').addEventListener('click', () => {
       this.audio.stopBGM();
       this.showScreen('menu-screen');
@@ -40,18 +41,64 @@ class App {
     // Bind game controls
     document.getElementById('btn-submit').addEventListener('click', () => this.handleSubmit());
     document.getElementById('btn-skip').addEventListener('click', () => this.handleSkip());
+    document.getElementById('btn-hint').addEventListener('click', () => {
+      this.audio.playTap();
+      this.game.useHint();
+    });
+    document.getElementById('btn-game-back').addEventListener('click', () => {
+      this.audio.playTap();
+      this.game.pause();
+      this.showModal('modal-pause');
+    });
+
+    // Bind modals
+    document.getElementById('btn-diff-easy').addEventListener('click', () => { this.hideModal('modal-difficulty'); this.startGame('easy'); });
+    document.getElementById('btn-diff-hard').addEventListener('click', () => { this.hideModal('modal-difficulty'); this.startGame('hard'); });
+    document.getElementById('btn-diff-cancel').addEventListener('click', () => { this.audio.playTap(); this.hideModal('modal-difficulty'); });
+    
+    document.getElementById('btn-pause-resume').addEventListener('click', () => {
+      this.audio.playTap();
+      this.hideModal('modal-pause');
+      this.game.resume();
+    });
+    document.getElementById('btn-pause-quit').addEventListener('click', () => {
+      this.audio.playTap();
+      this.hideModal('modal-pause');
+      this.game.destroy();
+      this.audio.stopBGM();
+      this.showScreen('menu-screen');
+    });
 
     // Bind mute buttons
     document.getElementById('btn-mute').addEventListener('click', () => this.toggleMute());
     document.getElementById('btn-mute-game').addEventListener('click', () => this.toggleMute());
 
     // Setup game callbacks
-    this.game.onTimerTick = (t) => this.updateTimer(t);
-    this.game.onCorrectAnswer = (s) => this.handleCorrect(s);
+    this.game.onTimerTick = (t, maxT) => this.updateTimer(t, maxT);
+    this.game.onCorrectAnswer = (s, c) => this.handleCorrect(s, c);
     this.game.onWrongAnswer = (l) => this.handleWrong(l);
-    this.game.onGameOver = (s, r, h) => this.handleGameOver(s, r, h);
+    this.game.onGameOver = (s, r, h, c) => this.handleGameOver(s, r, h, c);
     this.game.onNewSentence = (w, c) => this.renderNewSentence(w, c);
     this.game.onWordsChanged = (j, s) => this.renderWords(j, s);
+    this.game.onHintUsed = (rem) => {
+      const btn = document.getElementById('btn-hint');
+      btn.textContent = `💡 HINT (${rem})`;
+      if (rem <= 0) btn.disabled = true;
+    };
+
+    // Initialize Sortable for drag and drop
+    if (typeof Sortable !== 'undefined') {
+      new Sortable(document.getElementById('staged-tiles'), {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        filter: '.staged-placeholder',
+        onEnd: () => {
+          const tiles = document.querySelectorAll('#staged-tiles .word-tile');
+          const newOrder = Array.from(tiles).map(t => t.textContent);
+          this.game.reorderStagedWords(newOrder);
+        }
+      });
+    }
 
     // Register service worker
     if ('serviceWorker' in navigator) {
@@ -59,15 +106,23 @@ class App {
     }
   }
 
-  // ===== Screen Navigation =====
+  // ===== Screen & Modal Navigation =====
   showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
     this.currentScreen = screenId;
   }
 
+  showModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+  }
+
+  hideModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+  }
+
   // ===== Game Flow =====
-  startGame() {
+  startGame(mode = 'easy') {
     // Init audio on first user interaction
     this.audio.init();
     this.audio.resume();
@@ -77,15 +132,34 @@ class App {
 
     // Reset UI
     document.getElementById('game-score').textContent = '0';
-    document.getElementById('game-timer').textContent = '60';
+    document.getElementById('game-combo').style.display = 'none';
+    document.getElementById('game-timer').textContent = mode === 'marathon' ? '∞' : '180';
     document.getElementById('game-timer').className = 'game-timer-value';
+    
+    // Hint button
+    const hintBtn = document.getElementById('btn-hint');
+    hintBtn.textContent = '💡 HINT (3)';
+    hintBtn.disabled = false;
+    hintBtn.style.display = mode === 'marathon' ? 'none' : 'block';
+    
+    // Hide/Show UI for marathon mode
+    const timerContainer = document.querySelector('.game-timer');
+    const livesContainer = document.querySelector('.game-lives');
+    if (mode === 'marathon') {
+      timerContainer.style.opacity = '0.3';
+      livesContainer.style.opacity = '0.3';
+    } else {
+      timerContainer.style.opacity = '1';
+      livesContainer.style.opacity = '1';
+    }
+
     const barFill = document.getElementById('timer-bar-fill');
     barFill.style.width = '100%';
     barFill.className = 'game-timer-bar-fill';
     this.renderLives(3);
     document.getElementById('btn-submit').disabled = true;
 
-    this.game.start();
+    this.game.start(mode);
   }
 
   handleSubmit() {
@@ -101,11 +175,12 @@ class App {
   }
 
   // ===== Game Callbacks =====
-  updateTimer(timeRemaining) {
+  updateTimer(timeRemaining, totalTime) {
+    if (this.game.mode === 'marathon') return;
     const timerEl = document.getElementById('game-timer');
     const barFill = document.getElementById('timer-bar-fill');
     timerEl.textContent = timeRemaining;
-    barFill.style.width = (timeRemaining / 60 * 100) + '%';
+    barFill.style.width = (timeRemaining / totalTime * 100) + '%';
 
     // Color transitions
     timerEl.className = 'game-timer-value';
@@ -120,13 +195,21 @@ class App {
     }
   }
 
-  handleCorrect(score) {
+  handleCorrect(score, combo) {
     this.audio.playCorrect();
     const scoreEl = document.getElementById('game-score');
     scoreEl.textContent = score;
     scoreEl.classList.remove('score-pop');
     void scoreEl.offsetWidth; // force reflow
     scoreEl.classList.add('score-pop');
+
+    const comboEl = document.getElementById('game-combo');
+    if (combo > 1) {
+      comboEl.textContent = `${combo}x COMBO!`;
+      comboEl.style.display = 'block';
+    } else {
+      comboEl.style.display = 'none';
+    }
 
     // Green flash
     this.flashOverlay('correct');
@@ -143,7 +226,7 @@ class App {
     setTimeout(() => staged.style.animation = '', 400);
   }
 
-  handleGameOver(score, reason, isNewHighScore) {
+  handleGameOver(score, reason, isNewHighScore, correctAnswer) {
     this.audio.stopBGM();
 
     const titleEl = document.getElementById('gameover-title');
@@ -160,6 +243,14 @@ class App {
 
     const badge = document.getElementById('new-highscore-badge');
     badge.style.display = isNewHighScore ? 'block' : 'none';
+
+    const correctAnswerEl = document.getElementById('gameover-correct-answer');
+    if (correctAnswer) {
+      correctAnswerEl.innerHTML = `Correct Answer:<br><span>${correctAnswer}</span>`;
+      correctAnswerEl.style.display = 'block';
+    } else {
+      correctAnswerEl.style.display = 'none';
+    }
 
     this.showScreen('gameover-screen');
   }
@@ -210,7 +301,8 @@ class App {
     });
 
     // Enable/disable submit
-    const allPlaced = stagedWords.length > 0 && jumbledWords.length === 0;
+    const requiredLength = this.game.originalWords ? this.game.originalWords.length : 0;
+    const allPlaced = stagedWords.length === requiredLength;
     document.getElementById('btn-submit').disabled = !allPlaced;
   }
 

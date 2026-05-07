@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-512.png" type="image/png">
   <link rel="apple-touch-icon" href="icons/icon-512.png">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=2">
 </head>
 <body>
   <!-- Background Effects -->
@@ -37,6 +37,7 @@
       </div>
       <p class="menu-username">Playing as <span id="username-display"></span></p>
       <button class="neon-btn primary" id="btn-play">▶ PLAY</button>
+      <button class="neon-btn green" id="btn-marathon">🏃 MARATHON MODE</button>
       <button class="neon-btn" id="btn-highscore">🏆 HIGH SCORES</button>
       <button class="neon-btn magenta" id="btn-howtoplay">📖 HOW TO PLAY</button>
       <button class="neon-btn amber" id="btn-leaderboard">🌐 LEADERBOARD</button>
@@ -52,6 +53,7 @@
         <div class="game-score">
           <div class="game-score-label">Score</div>
           <div class="game-score-value" id="game-score">0</div>
+          <div class="game-combo" id="game-combo" style="display:none; color:var(--neon-magenta); font-size:0.8rem; font-weight:bold;">1x COMBO!</div>
         </div>
         <div class="game-timer">
           <div class="game-timer-value" id="game-timer">60</div>
@@ -86,9 +88,11 @@
       </div>
 
       <div class="game-submit-area">
+        <button class="neon-btn small" id="btn-hint" title="Use Hint">💡 HINT (3)</button>
         <button class="neon-btn small" id="btn-skip" title="Skip">⏭ SKIP</button>
         <button class="neon-btn primary" id="btn-submit" disabled>✓ SUBMIT</button>
       </div>
+      <button class="mute-btn" id="btn-game-back" title="Pause / Go Back" style="right: auto; left: 12px;">🔙</button>
       <button class="mute-btn" id="btn-mute-game" title="Toggle Sound">🔊</button>
     </section>
 
@@ -101,6 +105,7 @@
         <div class="gameover-score-value" id="gameover-score">0</div>
       </div>
       <div class="gameover-best">Best: <span id="gameover-best">0</span></div>
+      <div id="gameover-correct-answer" class="gameover-correct-answer" style="display:none;"></div>
       <div class="gameover-buttons">
         <button class="neon-btn primary" id="btn-retry">🔄 PLAY AGAIN</button>
         <button class="neon-btn" id="btn-menu">🏠 MAIN MENU</button>
@@ -125,23 +130,23 @@
         </div>
         <div class="htp-card">
           <div class="htp-card-icon">👆</div>
-          <h3>Tap to Build</h3>
-          <p>Tap a word to add it to your answer. Tap a placed word to remove it. Arrange all words correctly, then hit Submit.</p>
+          <h3>Drag to Rearrange</h3>
+          <p>Tap a word to move it to your answer. You can drag and drop words within your answer to rearrange them!</p>
         </div>
         <div class="htp-card">
           <div class="htp-card-icon">⏱️</div>
-          <h3>Beat the Clock</h3>
-          <p>You have 60 seconds per game. Sentences get longer as you score more. Speed is key!</p>
+          <h3>Beat the Clock & Combos</h3>
+          <p>You have 3 minutes. Correct answers give bonus time. Answer quickly within 5s to build a Combo Multiplier for huge scores!</p>
+        </div>
+        <div class="htp-card">
+          <div class="htp-card-icon">🔥</div>
+          <h3>Hard Mode & Hints</h3>
+          <p>In Hard Mode, extra "dummy" words are mixed in—ignore them! Stuck? Use the 💡 HINT button (you get 3 per game).</p>
         </div>
         <div class="htp-card">
           <div class="htp-card-icon">❤️</div>
           <h3>Lives System</h3>
           <p>You start with 3 lives. Each wrong submission costs 1 life. Game ends at 0 lives or when time runs out.</p>
-        </div>
-        <div class="htp-card">
-          <div class="htp-card-icon">⭐</div>
-          <h3>Scoring</h3>
-          <p>+1 point for each correct sentence. Try to beat your high score! Difficulty increases with each correct answer.</p>
         </div>
       </div>
       <button class="neon-btn small" id="btn-htp-back" style="margin-top:16px">← BACK</button>
@@ -156,12 +161,36 @@
       </div>
       <button class="neon-btn small" id="btn-lb-back">← BACK</button>
     </section>
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-difficulty">
+      <div class="modal-box">
+        <h2 class="modal-title">Select Difficulty</h2>
+        <div class="modal-buttons">
+          <button class="neon-btn primary" id="btn-diff-easy">▶ EASY MODE</button>
+          <button class="neon-btn red" id="btn-diff-hard">▶ HARD MODE</button>
+          <button class="neon-btn small" id="btn-diff-cancel">CANCEL</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-pause">
+      <div class="modal-box">
+        <h2 class="modal-title">Game Paused</h2>
+        <p style="color:var(--text-secondary); margin-bottom:16px;">Do you want to quit to the main menu?</p>
+        <div class="modal-buttons">
+          <button class="neon-btn primary" id="btn-pause-resume">▶ RESUME</button>
+          <button class="neon-btn red" id="btn-pause-quit">🏠 QUIT TO MENU</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <script src="js/sentences.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/audio.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script src="js/sentences.js?v=2"></script>
+  <script src="js/storage.js?v=2"></script>
+  <script src="js/audio.js?v=2"></script>
+  <script src="js/game.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
 </body>
 </html>

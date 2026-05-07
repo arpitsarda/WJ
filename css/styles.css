@@ -304,6 +304,12 @@ html, body {
   font-family: var(--font-display); font-size: 1rem; color: var(--neon-green);
   animation: neonPulse 1s ease infinite; letter-spacing: 2px;
 }
+.gameover-correct-answer {
+  font-family: var(--font-body); font-size: 1rem; color: var(--text-primary); text-align: center;
+  margin-top: 4px; padding: 12px; border: 1px dashed var(--neon-magenta);
+  border-radius: var(--radius-sm); background: rgba(255,0,229,0.05);
+}
+.gameover-correct-answer span { color: var(--neon-magenta); font-weight: bold; }
 .gameover-buttons { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 300px; }
 
 /* ===== High Scores Screen ===== */
@@ -332,7 +338,7 @@ html, body {
 .no-scores { color: var(--text-dim); font-style: italic; text-align: center; padding: 40px 0; }
 
 /* ===== How to Play ===== */
-#howtoplay-screen { justify-content: flex-start; padding-top: 40px; gap: 16px; overflow-y: auto; }
+#howtoplay-screen { justify-content: flex-start; padding: 40px 20px 80px 20px; gap: 16px; overflow-y: auto; }
 .htp-cards { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
 .htp-card {
   padding: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle);
@@ -409,3 +415,26 @@ html, body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 2px; }
+
+/* ===== Modals ===== */
+.modal-overlay {
+  position: absolute; inset: 0; z-index: 200;
+  background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(5px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; transition: opacity 0.3s;
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+.modal-box {
+  background: var(--bg-card); border: 2px solid var(--neon-cyan);
+  border-radius: var(--radius); padding: 24px; text-align: center;
+  box-shadow: var(--glow-cyan); width: 90%; max-width: 320px;
+  transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.modal-overlay.active .modal-box { transform: scale(1); }
+.modal-title {
+  font-family: var(--font-display); font-size: 1.2rem; color: var(--neon-cyan);
+  margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px;
+}
+.modal-buttons {
+  display: flex; flex-direction: column; gap: 12px;
+}
