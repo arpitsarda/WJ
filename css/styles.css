@@ -222,7 +222,8 @@ html, body {
 .staged-tiles {
   background: rgba(255,0,229,0.03);
   border: 2px dashed rgba(255,0,229,0.2); border-radius: var(--radius);
-  min-height: 56px; position: relative;
+  min-height: 120px; position: relative;
+  align-content: flex-start;
 }
 .staged-tiles.has-words { border-style: solid; border-color: rgba(255,0,229,0.3); }
 .staged-placeholder {
@@ -240,6 +241,7 @@ html, body {
   background: var(--bg-card); color: var(--text-primary);
   position: relative; overflow: hidden;
   animation: tileAppear 0.3s ease both;
+  touch-action: none;
 }
 .word-tile::before {
   content: ''; position: absolute; inset: 0;
@@ -256,6 +258,20 @@ html, body {
   background: rgba(255,0,229,0.1);
 }
 .word-tile.staged-word:active { box-shadow: var(--glow-magenta); }
+
+/* ===== SortableJS Effects ===== */
+.sortable-ghost {
+  opacity: 0.3 !important;
+  background-color: var(--bg-card) !important;
+  border: 2px dashed var(--text-dim) !important;
+}
+.sortable-drag-fallback {
+  opacity: 0.9 !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), var(--glow-cyan) !important;
+  transform: scale(1.05) !important;
+  cursor: grabbing !important;
+  z-index: 1000 !important;
+}
 
 /* ===== Submit Area ===== */
 .game-submit-area {

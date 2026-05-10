@@ -100,6 +100,10 @@ class App {
         group: 'shared',
         animation: 150,
         ghostClass: 'sortable-ghost',
+        forceFallback: true,
+        fallbackClass: 'sortable-drag-fallback',
+        delay: 0,
+        fallbackTolerance: 3,
         onStart: () => { this.isDragging = true; },
         onEnd: () => {
           setTimeout(() => {
@@ -114,6 +118,10 @@ class App {
         animation: 150,
         ghostClass: 'sortable-ghost',
         filter: '.staged-placeholder',
+        forceFallback: true,
+        fallbackClass: 'sortable-drag-fallback',
+        delay: 0,
+        fallbackTolerance: 3,
         onStart: () => { this.isDragging = true; },
         onEnd: () => {
           setTimeout(() => {
