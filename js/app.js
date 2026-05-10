@@ -88,14 +88,38 @@ class App {
 
     // Initialize Sortable for drag and drop
     if (typeof Sortable !== 'undefined') {
+      const updateFromDOM = () => {
+        const jumbledTiles = document.querySelectorAll('#jumbled-tiles .word-tile');
+        const stagedTiles = document.querySelectorAll('#staged-tiles .word-tile:not(.staged-placeholder)');
+        const newJumbled = Array.from(jumbledTiles).map(t => t.textContent);
+        const newStaged = Array.from(stagedTiles).map(t => t.textContent);
+        this.game.setWordsState(newJumbled, newStaged);
+      };
+
+      new Sortable(document.getElementById('jumbled-tiles'), {
+        group: 'shared',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onStart: () => { this.isDragging = true; },
+        onEnd: () => {
+          setTimeout(() => {
+            updateFromDOM();
+            this.isDragging = false;
+          }, 50);
+        }
+      });
+
       new Sortable(document.getElementById('staged-tiles'), {
+        group: 'shared',
         animation: 150,
         ghostClass: 'sortable-ghost',
         filter: '.staged-placeholder',
+        onStart: () => { this.isDragging = true; },
         onEnd: () => {
-          const tiles = document.querySelectorAll('#staged-tiles .word-tile');
-          const newOrder = Array.from(tiles).map(t => t.textContent);
-          this.game.reorderStagedWords(newOrder);
+          setTimeout(() => {
+            updateFromDOM();
+            this.isDragging = false;
+          }, 50);
         }
       });
     }
@@ -270,6 +294,7 @@ class App {
       tile.textContent = word;
       tile.style.animationDelay = (i * 0.05) + 's';
       tile.addEventListener('click', () => {
+        if (this.isDragging) return;
         this.audio.playTap();
         this.game.selectWord(i);
       });
@@ -294,6 +319,7 @@ class App {
       tile.className = 'word-tile staged-word';
       tile.textContent = word;
       tile.addEventListener('click', () => {
+        if (this.isDragging) return;
         this.audio.playTap();
         this.game.deselectWord(i);
       });

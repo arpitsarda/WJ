@@ -76,9 +76,10 @@ class GameEngine {
     if (this.onWordsChanged) this.onWordsChanged(this.jumbledWords, this.stagedWords);
   }
 
-  reorderStagedWords(newOrder) {
+  setWordsState(newJumbled, newStaged) {
     if (!this.isRunning || this.isPaused) return;
-    this.stagedWords = newOrder;
+    this.jumbledWords = newJumbled;
+    this.stagedWords = newStaged;
     if (this.onWordsChanged) this.onWordsChanged(this.jumbledWords, this.stagedWords);
   }
 
@@ -96,7 +97,7 @@ class GameEngine {
     // Check if current staged words match prefix
     let matchLen = 0;
     for (let i = 0; i < this.stagedWords.length; i++) {
-      if (this.stagedWords[i] === this.originalWords[i]) {
+      if (this.stagedWords[i].toLowerCase() === this.originalWords[i].toLowerCase()) {
         matchLen++;
       } else {
         break;
@@ -111,8 +112,8 @@ class GameEngine {
 
     // Find the next required word in jumbled
     if (matchLen < this.originalWords.length) {
-      const requiredWord = this.originalWords[matchLen];
-      const idx = this.jumbledWords.findIndex(w => w === requiredWord);
+      const requiredWord = this.originalWords[matchLen].toLowerCase();
+      const idx = this.jumbledWords.findIndex(w => w.toLowerCase() === requiredWord);
       if (idx !== -1) {
         const word = this.jumbledWords.splice(idx, 1)[0];
         this.stagedWords.push(word);
@@ -130,8 +131,8 @@ class GameEngine {
   submit() {
     if (!this.isRunning || this.stagedWords.length !== this.originalWords.length) return;
 
-    const playerAnswer = this.stagedWords.join(' ');
-    const correctAnswer = this.originalWords.join(' ');
+    const playerAnswer = this.stagedWords.join(' ').toLowerCase();
+    const correctAnswer = this.originalWords.join(' ').toLowerCase();
 
     if (playerAnswer === correctAnswer) {
       const now = Date.now();
